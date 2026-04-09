@@ -13,6 +13,37 @@ st.set_page_config(
 # ── Custom CSS ──
 st.markdown("""
 <style>
+    /* Fix broken Material Symbols icons */
+    [data-testid="stIconMaterial"] {
+        font-size: 0 !important;
+        width: 0;
+        height: 0;
+        display: inline-block;
+        vertical-align: middle;
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        border-left: 7px solid #6b7280;
+        margin-right: 6px;
+    }
+    
+    [data-testid="stExpander"][open] [data-testid="stIconMaterial"] {
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 7px solid #6b7280;
+        border-bottom: none;
+    }
+    
+    [data-testid="baseButton-headerNoPadding"] [data-testid="stIconMaterial"] {
+        font-size: 0 !important;
+        width: 0;
+        height: 0;
+        display: inline-block;
+        vertical-align: middle;
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        border-left: 7px solid #6b7280;
+        margin-right: 6px;
+    }
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     html, body, [class*="st-"] { font-family: 'Inter', sans-serif; }
     .main-header { font-size: 2.2rem; font-weight: 700; color: #1a1a2e; margin-bottom: 0.2rem; }
