@@ -1,0 +1,165 @@
+COMPETITOR PRODUCT LAUNCH DATA (Past 18 months, Sep 2024 - Mar 2026)
+Total launches tracked: 49 across 10 major wirehouses/wealth managers
+
+Launches by firm:
+  JPMorgan: 8 launches
+  Goldman Sachs: 8 launches
+  Fidelity: 7 launches
+  UBS: 7 launches
+  Edward Jones: 5 launches
+  Morgan Stanley: 4 launches
+  Raymond James: 3 launches
+  Merrill Lynch: 3 launches
+  Schwab: 2 launches
+  Wells Fargo: 2 launches
+
+Launches by asset class theme:
+  Public Equities (ETFs, SMAs): 17
+  Fixed Income / Credit: 16
+  Private Markets / Alternatives: 6
+  Private Equity / PE-like: 4
+  Cash / Treasury: 2
+  Retirement Services: 2
+  Multi-Asset / Income: 1
+  Other: 1
+
+Notable recent launches (selected):
+  - JPMorgan: JPMorgan Nasdaq Equity Premium Yield ETF (ROCQ) (2026-03-19)
+    Asset class: U.S. equity / options | Structure: Active ETF
+    Target: Investors seeking Nasdaq exposure with derivative-based income | Min: 1 share (plus brokerage minimums) | Fees: 0.35%
+    Active Nasdaq-focused equity-income ETF that pairs growth-oriented equity exposure with call-spread overlays. It is designed for investors who want premium income without fully giving up upside partic
+
+  - JPMorgan: JPMorgan Equity Premium Yield ETF (ROCY) (2026-03-19)
+    Asset class: U.S. equity / options | Structure: Active ETF
+    Target: Investors seeking equity exposure with derivative-based income | Min: 1 share (plus brokerage minimums) | Fees: 0.35%
+    Active U.S. large-cap equity-income ETF that combines stock exposure with call-spread overlays. It expands JPMorgan’s derivative income suite for investors who want a lower-basis, yield-oriented alter
+
+  - Morgan Stanley: Eaton Vance Preferred Securities and Income ETF (EVPF) (2026-03-05)
+    Asset class: Preferred securities / income | Structure: Active ETF
+    Target: Income investors seeking tax-advantaged preferred-securities exposure | Min: 1 share (plus brokerage minimums) | Fees: 0.39% gross / 0.20% net (temporary waiver)
+    Active preferred-securities ETF focused on current income and after-tax yield potential. The strategy emphasizes research-driven security selection and securities that may generate qualified dividend 
+
+  - Fidelity: Fidelity AAA CLO ETF (FAAA) (2026-02-12)
+    Asset class: Structured credit / CLOs | Structure: Active ETF
+    Target: Fixed-income investors seeking high-quality CLO exposure | Min: 1 share (plus brokerage minimums) | Fees: 0.20% gross (fee waived first 12 months)
+    Active CLO ETF investing primarily in AAA-rated collateralized loan obligations. Fidelity positioned it as a diversified ETF entry point into the CLO market at a competitive fee.
+
+  - Fidelity: Fidelity CLO ETF (FCLO) (2026-02-12)
+    Asset class: Structured credit / CLOs | Structure: Active ETF
+    Target: Income investors seeking broader CLO tranche exposure | Min: 1 share (plus brokerage minimums) | Fees: 0.45% gross (fee waived first 12 months)
+    Active CLO ETF investing primarily in collateralized loan obligations rated BBB+ to B-. It offers a higher-spread complement to Fidelity’s AAA-only CLO launch.
+
+  - JPMorgan: JPMorgan International Dynamic ETF (JIDE) (2026-01-28)
+    Asset class: International equity | Structure: Active ETF
+    Target: U.S. investors seeking active developed-markets equity exposure outside North America | Min: 1 share (plus brokerage minimums) | Fees: 0.55%
+    Active international equity ETF focused on developed markets outside North America. The strategy uses bottom-up stock selection across Europe, Japan and Asia ex-North America.
+
+  - Wells Fargo: WIM internal proxy voting service (2026-01-28)
+    Asset class: Investment stewardship service | Structure: Proprietary proxy-voting service
+    Target: Clients whose assets are managed with both investment discretion and proxy-voting authority | Min: Not publicly disclosed | Fees: Not publicly disclosed
+    Wells Fargo Wealth & Investment Management launched an in-house proxy voting service for eligible client assets. The move shifts voting to WIM’s own custom policy and positions stewardship as part of 
+
+  - Goldman Sachs: Goldman Sachs MSCI World Private Equity Return Tracker UCITS ETF (GSPE) (2026-01-13)
+    Asset class: Private equity-like equities / liquid alternatives | Structure: Index-tracking UCITS ETF
+    Target: European advisors and wealth clients seeking liquid private-equity-like exposure | Min: Typically 1 share / exchange trading minimum | Fees: 0.50% TER
+    European UCITS follow-on to GTPE that packages private-equity-like index exposure in a listed ETF vehicle. The product expands Goldman’s private-market proxy strategy to cross-border wealth channels i
+
+  - JPMorgan: My OnChain Net Yield Fund (MONY) (2025-12-15)
+    Asset class: Cash / Treasuries | Structure: Tokenized private placement money market fund
+    Target: Qualified purchasers / accredited investors using Morgan Money | Min: Not publicly disclosed | Fees: Not publicly disclosed
+    JPMorgan’s first tokenized money market fund, issued on Ethereum for qualified investors. The fund aims to pair traditional Treasury-backed cash management with blockchain-based transferability and se
+
+  - JPMorgan: JPMorgan 100% U.S. Treasury Securities Money Market ETF (JMMF) (2025-12-11)
+    Asset class: Cash / Treasuries | Structure: Money market ETF
+    Target: Cash investors seeking Treasury-only exposure with intraday tradability | Min: 1 share (plus brokerage minimums) | Fees: 0.16%
+    Treasury-only money market ETF designed to follow SEC Rule 2a-7 liquidity requirements while offering weekly income distributions. It extends money-market exposure into an ETF wrapper.
+
+  - Merrill Lynch: Cash Balance Defined Benefit Plan with Merrill (2025-12-08)
+    Asset class: Retirement | Structure: Cash balance defined-benefit plan
+    Target: Business owners and higher-saving employer-sponsored plan participants | Min: Not publicly disclosed | Fees: Not publicly disclosed
+    New cash-balance plan offering designed to be paired with a 401(k). The structure is aimed at helping business owners and employees raise retirement contributions and reduce taxable income.
+
+  - Merrill Lynch: Workplace Benefits Advised Pooled Employer Plan (PEP) (2025-12-08)
+    Asset class: Retirement | Structure: Advised pooled employer plan
+    Target: Small business owners and employers | Min: Not publicly disclosed | Fees: Not publicly disclosed
+    New shared retirement-plan offering that lets multiple employers participate in a common plan. Merrill positions it as a way to reduce administrative burden while preserving flexible plan design.
+
+  - UBS: UBS MSCI India SF UCITS ETF (2025-11-14)
+    Asset class: Indian equities | Structure: Passive synthetic UCITS ETF
+    Target: Wealth and institutional investors seeking broad India exposure | Min: Typically 1 share / exchange trading minimum | Fees: 0.15% TER
+    Synthetic ETF offering broad large- and mid-cap Indian equity exposure via the MSCI India Index. UBS highlighted the swap-based structure as potentially beneficial because synthetic ETFs are not curre
+
+  - UBS: UBS MSCI India Universal UCITS ETF (2025-11-14)
+    Asset class: Indian equities | Structure: Passive physical UCITS ETF
+    Target: Wealth and institutional investors seeking India exposure with ESG and low-carbon tilts | Min: Typically 1 share / exchange trading minimum | Fees: 0.35% TER
+    Physical India ETF tracking the MSCI India Universal Low Carbon Select 5% Issuer Capped Index. The fund tilts toward companies with stronger and improving ESG profiles while excluding names that do no
+
+  - Morgan Stanley: Eaton Vance Income Opportunities ETF (XAGG) (2025-11-10)
+    Asset class: Multisector fixed income | Structure: Active ETF (fund conversion)
+    Target: Investors seeking flexible non-core global fixed-income exposure | Min: 1 share (plus brokerage minimums) | Fees: See current prospectus
+    Active multisector bond ETF launched via conversion of the Morgan Stanley Income Opportunities Fund. It allocates flexibly across securitized credit, emerging-markets debt, high yield and loans.
+
+  - Morgan Stanley: Morgan Stanley Private Markets ELTIF (2025-10-31)
+    Asset class: Private markets / multi-asset | Structure: ELTIF 2.0 semi-liquid private-markets fund
+    Target: Eligible / professional wealth investors seeking private-market access | Min: €10,000 | Fees: See fund documents
+    Semi-liquid private-markets ELTIF that invests across private equity, private credit and private real assets, with select public investments for liquidity management. It is designed to broaden private
+
+  - Goldman Sachs: Goldman Sachs MSCI World Private Equity Return Tracker ETF (GTPE) (2025-10-23)
+    Asset class: Private equity-like equities / liquid alternatives | Structure: Index-tracking ETF
+    Target: Advisors and investors seeking liquid, lower-cost access to private-equity-like returns | Min: Typically 1 share / exchange trading minimum | Fees: 0.50% net expense ratio
+    GTPE uses an MSCI index built from private-company data and publicly listed equities to approximate private equity-like returns in an ETF wrapper. It is positioned as a liquid alternative for wealth c
+
+  - Raymond James: RJ Eagle Municipal Income ETF (RJMI) (2025-10-02)
+    Asset class: Municipal fixed income | Structure: Actively managed ETF
+    Target: Tax-sensitive income investors and advisors | Min: Typically 1 share / exchange trading minimum | Fees: 0.40% management fee / 0.45% net expense ratio
+    RJMI is an actively managed municipal bond ETF designed to provide tax-advantaged income and long-term capital appreciation. The strategy emphasizes credit selection, risk-aware portfolio construction
+
+  - Raymond James: RJ Eagle GCM Dividend Select Income ETF (RJDI) (2025-10-02)
+    Asset class: U.S. dividend equities | Structure: Actively managed ETF
+    Target: Income-oriented equity investors and advisors | Min: Typically 1 share / exchange trading minimum | Fees: 0.50% management fee / 0.50% net expense ratio
+    RJDI is a U.S. large-cap equity income ETF focused on high-quality dividend-paying companies with strong fundamentals and shareholder-friendly capital return policies. It blends top-down sector views 
+
+  - Raymond James: RJ Eagle Vertical Income ETF (RJVI) (2025-10-02)
+    Asset class: Multi-asset income / core fixed income alternative | Structure: Actively managed ETF
+    Target: Income-focused advisors and investors seeking diversified income with flexible multi-asset exposure | Min: Typically 1 share / exchange trading minimum | Fees: 0.55% management fee / 0.55% net expense ratio
+    RJVI is positioned as a modern fixed income alternative that combines investment-grade bonds with preferred equity and dividend-paying equities. Raymond James launched it as part of its first active E
+
+
+KEY COMPETITIVE TRENDS OBSERVED ACROSS ALL 10 FIRMS:
+
+1. ETF WRAPPER DOMINANCE: The overwhelming majority of new launches use ETF structures rather than traditional mutual funds. Firms are packaging everything from active fixed income to options-based income to buffered outcomes inside ETFs for tax efficiency, liquidity, and advisor ease-of-use.
+
+2. ALTERNATIVES DEMOCRATIZATION: Multiple firms are broadening retail/HNW access to private markets. Examples include Morgan Stanley's ELTIF, Goldman Sachs' private equity return tracker ETFs, Edward Jones' private equity/credit/real estate UMA sleeves, Merrill Lynch's Alts Expanded Access Program, and Wells Fargo enabling alternatives inside Personalized UMA.
+
+3. INCOME AND YIELD FOCUS: A disproportionate number of launches target income generation. Options-based equity income (JPMorgan JOYT, ROCY, ROCQ), multi-asset income (JPMorgan JFLI, Raymond James RJVI), high yield (JPMorgan JPHY), and preferred securities (Morgan Stanley EVPF) all reflect the yield-seeking environment.
+
+4. TAX-AWARE AND MUNICIPAL STRATEGIES: Multiple firms launched municipal bond ETFs (Fidelity FMUB, FMUN, Raymond James RJMI), reflecting demand for tax-efficient income.
+
+5. STRUCTURED CREDIT / CLO ACCESS: Fidelity launched two CLO ETFs (FCLO, FAAA), bringing institutional-grade structured credit to retail investors.
+
+6. PLATFORM AND SERVICE INNOVATION: Several launches were not products but platform capabilities. Edward Jones' Generations program, Wells Fargo's UMA alternatives integration, and Wells Fargo's proxy voting service reflect competition happening at the infrastructure and service layer, not just the product level.
+
+7. TOKENIZATION AND DIGITAL: JPMorgan's MONY (My OnChain Net Yield Fund) represents early moves toward tokenized financial products for wealth management clients.
+
+
+MACROECONOMIC AND FUND FLOW CONTEXT (Jan 2024 - Early 2026)
+
+Key Macro Indicators:
+- Federal Funds Rate: Declined from 5.33% (early 2024) to ~3.64% (early 2026). Fed has begun easing after extended tightening cycle.
+- 10-Year Treasury Yield: Remains volatile around 4%, indicating persistent inflation uncertainty and mixed long-term growth expectations.
+- CPI Inflation: Continues to rise steadily. Pace may be moderating but price levels remain elevated.
+- Unemployment: Gradually increased from 3.7% to mid-4% range.
+- Consumer Sentiment: Declined overall, reflecting growing caution and softening economic outlook.
+
+Fund Flow Trends:
+- Strong inflows into bond funds and money market instruments.
+- Equity fund flows have been weaker and less consistent.
+- Significant inflows into taxable bond funds and international equity ETFs (Morningstar data).
+- Clear investor preference for safety, liquidity, and predictable income.
+- Shift toward balanced and risk-managed portfolios rather than concentrated equity exposure.
+
+Implications:
+- Late-cycle environment with cautious investors, moderating growth, and still-elevated yields.
+- Favorable conditions for income-oriented products (fixed income, private credit, structured products with capital protection).
+- Globally diversified strategies seeing stronger demand.
+- Growth-focused equity products face lower demand unless they incorporate risk mitigation.

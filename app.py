@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import pandas as pd
+import boto3
 
 # ── Page Config ──
 st.set_page_config(
@@ -96,6 +97,178 @@ def load_hierarchy_and_feedback():
 
 scenarios = load_scenarios()
 hf_data = load_hierarchy_and_feedback()
+
+
+# ── Bedrock Client ──
+@st.cache_resource
+def get_bedrock_client():
+    return boto3.client(
+        service_name="bedrock-runtime",
+        region_name="us-east-2"
+    )
+
+@st.cache_data
+def load_market_context():
+    try:
+        with open("market_context.txt", "r") as f:
+            return f.read()
+    except FileNotFoundError:
+        return ""
+
+market_context = load_market_context()
+
+
+def generate_ideas_bedrock(user_context, market_data):
+    client = get_bedrock_client()
+
+    system_prompt = f"""You are a senior wealth management strategist advising the head of a major retail wealth management division (e.g., Merrill Lynch, Morgan Stanley Wealth Management, JP Morgan Private Client).
+
+Your role is to act as an "Idea Engine": given a set of market signals, competitor moves, demographic trends, and strategic constraints, you generate concrete new product and service ideas that the firm should consider launching.
+
+You have been provided with REAL market data below. Your ideas must be grounded in this data. Do not fabricate competitor launches, fund flow statistics, or macro indicators. Reference specific data points from the context when explaining why an idea is timely.
+
+=== MARKET CONTEXT (REAL DATA) ===
+
+{market_data}
+
+=== END MARKET CONTEXT ===
+
+For each idea you generate, provide:
+1. Product/Service Name: A clear, specific name
+2. Category: The asset class or service type
+3. Description: 2-3 sentences explaining what this product/service is
+4. Market Signal Link: Which specific data points from the market context above make this idea timely. Reference actual competitor launches, actual fund flow trends, or actual macro indicators.
+5. Target Client Segment: Who this is designed for
+6. DVF Scores (each 0-100 with brief justification):
+   - Desirability: How strong is client demand? Reference fund flow data and competitive activity.
+   - Viability: Can the firm generate meaningful revenue? Consider fee structures observed in competitor launches.
+   - Feasibility: How practical is implementation? Consider what competitors have already proven is launchable.
+7. Key Risks: 1-2 primary risks or challenges
+8. Suggested Next Steps: What the firm should do first to pursue this idea
+
+Generate 6-8 ideas, ranging from conservative/incremental to bold/innovative. Ensure diversity across asset classes and client segments.
+
+IMPORTANT: Respond ONLY with a valid JSON array. No markdown, no explanation, no text before or after the JSON. The JSON should be an array of objects with these fields:
+id, name, category, description, market_signal_link, target_client_segment, dvf_scores (with desirability, viability, feasibility each having score and justification), key_risks (array), suggested_next_steps (array)."""
+
+    body = json.dumps({
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 8192,
+        "system": system_prompt,
+        "messages": [
+            {
+                "role": "user",
+                "content": user_context
+            }
+        ]
+    })
+
+    response = client.invoke_model(
+        modelId="us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        body=body,
+        contentType="application/json",
+        accept="application/json"
+    )
+
+    response_body = json.loads(response["body"].read())
+    raw_text = response_body["content"][0]["text"]
+
+    # Clean up response
+    cleaned = raw_text.strip()
+    if cleaned.startswith("```json"):
+        cleaned = cleaned[7:]
+    if cleaned.startswith("```"):
+        cleaned = cleaned[3:]
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3]
+    cleaned = cleaned.strip()
+
+    try:
+        ideas = json.loads(cleaned)
+    except json.JSONDecodeError:
+        # Response was likely truncated - try to salvage complete ideas
+        last_complete = cleaned.rfind("},")
+        if last_complete > 0:
+            salvaged = cleaned[:last_complete + 1] + "]"
+            ideas = json.loads(salvaged)
+        else:
+            raise ValueError("Could not parse AI response. Try a shorter prompt.")
+    return ideas
+
+
+def generate_hierarchy_bedrock(ideas):
+    """Second LLM call: organize a flat list of ideas into a thematic hierarchy."""
+    client = get_bedrock_client()
+
+    # Build a condensed summary of the ideas for the prompt
+    ideas_summary = ""
+    for idea in ideas:
+        idea_id = idea.get("id", "unknown")
+        name = idea.get("name", "unnamed")
+        category = idea.get("category", "unknown")
+        desc = idea.get("description", "")[:100]
+        ideas_summary += f"- ID: {idea_id} | Name: {name} | Category: {category} | {desc}\n"
+
+    system_prompt = """You organize product ideas into a thematic hierarchy for a wealth management decision-support tool.
+
+Given a list of product/service ideas, group them into 3-5 strategic themes. Each theme should have:
+- A clear theme name (e.g., "Income and Yield Products", "Alternatives Democratization")
+- A one-sentence description of the strategic direction
+- Sub-categories within the theme
+- The idea IDs that belong to each sub-category
+
+IMPORTANT: Respond ONLY with valid JSON matching this exact structure. No markdown, no explanation:
+{
+  "themes": [
+    {
+      "theme": "Theme Name",
+      "description": "One sentence describing this strategic direction",
+      "idea_ids": ["id1", "id2"],
+      "sub_categories": [
+        {
+          "name": "Sub-Category Name",
+          "idea_ids": ["id1"]
+        }
+      ]
+    }
+  ]
+}
+
+Every idea ID must appear exactly once. Keep theme and sub-category names concise."""
+
+    body = json.dumps({
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 2000,
+        "system": system_prompt,
+        "messages": [
+            {
+                "role": "user",
+                "content": f"Organize these ideas into a thematic hierarchy:\n\n{ideas_summary}"
+            }
+        ]
+    })
+
+    response = client.invoke_model(
+        modelId="us.anthropic.claude-haiku-4-5-20251001-v1:0",
+        body=body,
+        contentType="application/json",
+        accept="application/json"
+    )
+
+    response_body = json.loads(response["body"].read())
+    raw_text = response_body["content"][0]["text"]
+
+    cleaned = raw_text.strip()
+    if cleaned.startswith("```json"):
+        cleaned = cleaned[7:]
+    if cleaned.startswith("```"):
+        cleaned = cleaned[3:]
+    if cleaned.endswith("```"):
+        cleaned = cleaned[:-3]
+    cleaned = cleaned.strip()
+
+    hierarchy = json.loads(cleaned)
+    return hierarchy
 
 
 # ── Helper: Get idea by ID ──
@@ -237,10 +410,19 @@ def render_idea_card(idea, rank, norm_d, norm_v, norm_f, show_feedback=True):
 
 # ── Sidebar ──
 with st.sidebar:
-    st.markdown("### Scenario Selection")
-    scenario_names = [s["scenario_title"] for s in scenarios]
-    selected_scenario_name = st.selectbox("Choose a market scenario", scenario_names, label_visibility="collapsed")
-    selected_scenario = next(s for s in scenarios if s["scenario_title"] == selected_scenario_name)
+    st.markdown("### Input Mode")
+    mode = st.radio(
+        "Select input mode",
+        ["Pre-built Scenarios", "Live Generation"],
+        label_visibility="collapsed"
+    )
+
+    if mode == "Pre-built Scenarios":
+        st.markdown("---")
+        st.markdown("### Scenario Selection")
+        scenario_names = [s["scenario_title"] for s in scenarios]
+        selected_scenario_name = st.selectbox("Choose a market scenario", scenario_names, label_visibility="collapsed")
+        selected_scenario = next(s for s in scenarios if s["scenario_title"] == selected_scenario_name)
 
     st.markdown("---")
     st.markdown("### View Mode")
@@ -276,13 +458,6 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    if view_mode == "Ranked List":
-        st.markdown("---")
-        st.markdown("### Filters")
-        all_categories = sorted(set(idea["category"] for idea in selected_scenario["ideas"]))
-        selected_categories = st.multiselect("Asset Class / Category", all_categories, default=all_categories)
-        min_composite = st.slider("Minimum Composite Score", 0, 100, 0)
-
     st.markdown("---")
     st.markdown(
         '<div style="text-align:center; color:#9ca3af; font-size:0.78rem;">'
@@ -301,148 +476,248 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Scenario Context
-st.markdown(f"### Scenario: {selected_scenario['scenario_title']}")
-st.markdown(f'<div class="scenario-box">{selected_scenario["scenario_description"]}</div>', unsafe_allow_html=True)
 
-signals_html = "".join(f'<span class="signal-tag">{s}</span>' for s in selected_scenario.get("market_signals", []))
-if signals_html:
-    st.markdown(f"**Market Signals:**\n\n{signals_html}", unsafe_allow_html=True)
+# ── Determine the active ideas based on mode ──
+active_ideas = None
+scenario_title = ""
+scenario_description = ""
+market_signals_list = []
+active_scenario_id = None
+
+if mode == "Pre-built Scenarios":
+    scenario_title = selected_scenario["scenario_title"]
+    scenario_description = selected_scenario["scenario_description"]
+    market_signals_list = selected_scenario.get("market_signals", [])
+    active_ideas = selected_scenario["ideas"]
+    active_scenario_id = selected_scenario.get("scenario_id")
+
+    st.markdown(f"### Scenario: {scenario_title}")
+    st.markdown(f'<div class="scenario-box">{scenario_description}</div>', unsafe_allow_html=True)
+
+    if market_signals_list:
+        signals_html = "".join(f'<span class="signal-tag">{s}</span>' for s in market_signals_list)
+        st.markdown(f"**Market Signals:**\n\n{signals_html}", unsafe_allow_html=True)
+
+else:
+    # Live Generation mode
+    st.markdown("### Live Idea Generation")
+
+    st.markdown(
+        '<div class="scenario-box">'
+        "Describe the market scenario you want to explore. The engine will use real competitor data "
+        "and macroeconomic context to generate grounded product ideas.<br><br>"
+        "<b>Example:</b> You are the head of wealth management at a top wirehouse. Your product shelf "
+        "has no alternatives offerings, but clients are increasingly asking about private markets. "
+        "Your biggest competitors have launched retail-accessible PE and private credit products in the "
+        "past year. What new products and services should you consider?"
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    user_input = st.text_area(
+        "Describe your market scenario:",
+        height=150,
+        placeholder="Enter your market scenario here...",
+        label_visibility="collapsed"
+    )
+
+    generate_button = st.button("Generate Ideas", type="primary", use_container_width=True)
+
+    if generate_button and user_input.strip():
+        with st.spinner("Generating ideas from market context..."):
+            try:
+                live_ideas = generate_ideas_bedrock(user_input, market_context)
+                st.session_state["live_ideas"] = live_ideas
+                st.session_state["live_input"] = user_input
+            except Exception as e:
+                st.error(f"Error generating ideas: {str(e)}")
+                st.info("Make sure your EC2 instance has the Bedrock IAM role attached and the model is available in us-east-2.")
+                live_ideas = None
+
+        if live_ideas:
+            with st.spinner("Organizing ideas into thematic hierarchy..."):
+                try:
+                    live_hierarchy = generate_hierarchy_bedrock(live_ideas)
+                    st.session_state["live_hierarchy"] = live_hierarchy
+                except Exception as e:
+                    st.warning(f"Could not generate hierarchy: {str(e)}. Ideas will display as a ranked list.")
+                    st.session_state["live_hierarchy"] = None
+
+    if "live_ideas" in st.session_state:
+        active_ideas = st.session_state["live_ideas"]
+        scenario_title = "Custom Scenario"
+        scenario_description = st.session_state.get("live_input", "")
+    else:
+        st.info("Enter a market scenario above and click 'Generate Ideas' to get started.")
+
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
+
+# ── Display ideas if we have them ──
+if active_ideas:
+
+    # Build filter list
+    all_categories = sorted(set(idea.get("category", "Unknown") for idea in active_ideas))
+
+    # Add filters to sidebar for ranked list mode
+    if view_mode == "Ranked List":
+        with st.sidebar:
+            st.markdown("---")
+            st.markdown("### Filters")
+            selected_categories = st.multiselect("Asset Class / Category", all_categories, default=all_categories)
+            min_composite = st.slider("Minimum Composite Score", 0, 100, 0)
+    else:
+        selected_categories = all_categories
+        min_composite = 0
 
 
 # ═══════════════════════════════════════════════════════
 # VIEW MODE: RANKED LIST
 # ═══════════════════════════════════════════════════════
-if view_mode == "Ranked List":
-    ideas_with_scores = []
-    for idea in selected_scenario["ideas"]:
-        dvf = idea.get("dvf_scores", {})
-        d = dvf.get("desirability", {}).get("score", 0)
-        v = dvf.get("viability", {}).get("score", 0)
-        f_score = dvf.get("feasibility", {}).get("score", 0)
-        composite = round(norm_d * d + norm_v * v + norm_f * f_score, 1)
-        if idea["category"] in selected_categories and composite >= min_composite:
-            ideas_with_scores.append({**idea, "composite": composite})
+    if view_mode == "Ranked List":
+        ideas_with_scores = []
+        for idea in active_ideas:
+            dvf = idea.get("dvf_scores", {})
+            d = dvf.get("desirability", {}).get("score", 0)
+            v = dvf.get("viability", {}).get("score", 0)
+            f_score = dvf.get("feasibility", {}).get("score", 0)
+            composite = round(norm_d * d + norm_v * v + norm_f * f_score, 1)
+            category = idea.get("category", "Unknown")
+            if category in selected_categories and composite >= min_composite:
+                ideas_with_scores.append({**idea, "composite": composite})
 
-    ideas_with_scores.sort(key=lambda x: x["composite"], reverse=True)
+        ideas_with_scores.sort(key=lambda x: x["composite"], reverse=True)
 
-    if ideas_with_scores:
-        st.markdown(f"### Ranked Ideas ({len(ideas_with_scores)} results)")
+        if ideas_with_scores:
+            st.markdown(f"### Ranked Ideas ({len(ideas_with_scores)} results)")
 
-        chart_data = pd.DataFrame([
-            {
-                "Idea": idea["name"][:40] + ("..." if len(idea["name"]) > 40 else ""),
-                "Desirability": idea["dvf_scores"]["desirability"]["score"] * norm_d,
-                "Viability": idea["dvf_scores"]["viability"]["score"] * norm_v,
-                "Feasibility": idea["dvf_scores"]["feasibility"]["score"] * norm_f,
-            }
-            for idea in ideas_with_scores
-        ])
-        chart_data = chart_data.set_index("Idea")
-        st.bar_chart(chart_data, color=["#86BC25", "#1A4F8B", "#D35400"], horizontal=True, height=max(250, len(ideas_with_scores) * 50))
+            chart_data = pd.DataFrame([
+                {
+                    "Idea": idea["name"][:40] + ("..." if len(idea["name"]) > 40 else ""),
+                    "Desirability": idea["dvf_scores"]["desirability"]["score"] * norm_d,
+                    "Viability": idea["dvf_scores"]["viability"]["score"] * norm_v,
+                    "Feasibility": idea["dvf_scores"]["feasibility"]["score"] * norm_f,
+                }
+                for idea in ideas_with_scores
+            ])
+            chart_data = chart_data.set_index("Idea")
+            st.bar_chart(chart_data, color=["#86BC25", "#1A4F8B", "#D35400"], horizontal=True, height=max(250, len(ideas_with_scores) * 50))
 
-        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+            st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
-        for rank, idea in enumerate(ideas_with_scores, 1):
-            render_idea_card(idea, rank, norm_d, norm_v, norm_f)
-    else:
-        st.warning("No ideas match the current filters.")
+            for rank, idea in enumerate(ideas_with_scores, 1):
+                render_idea_card(idea, rank, norm_d, norm_v, norm_f)
+        else:
+            st.warning("No ideas match the current filters.")
 
 
 # ═══════════════════════════════════════════════════════
 # VIEW MODE: THEMATIC HIERARCHY
 # ═══════════════════════════════════════════════════════
-elif view_mode == "Thematic Hierarchy":
-    # Find the hierarchy for this scenario
-    scenario_id = selected_scenario.get("scenario_id", selected_scenario.get("scenario_title", "")[:2].upper())
-    hierarchy = None
-    for h in hf_data.get("hierarchies", []):
-        if h["scenario_id"] == scenario_id:
-            hierarchy = h
-            break
+    elif view_mode == "Thematic Hierarchy":
+        # Find the hierarchy - check pre-built first, then live-generated
+        hierarchy = None
+        if active_scenario_id:
+            for h in hf_data.get("hierarchies", []):
+                if h["scenario_id"] == active_scenario_id:
+                    hierarchy = h
+                    break
 
-    if hierarchy:
-        st.markdown("### Thematic Idea Hierarchy")
-        st.markdown(
-            '<div class="dvf-explanation">'
-            "Ideas are organized into strategic themes. Expand a theme to explore its sub-categories "
-            "and individual product ideas. This view helps you identify which strategic direction to pursue "
-            "before drilling into specific products. Inspired by hierarchical mechanism trees from AI-assisted ideation research."
-            "</div>",
-            unsafe_allow_html=True
-        )
-        st.markdown("")
+        # Use live-generated hierarchy if available and in live mode
+        if hierarchy is None and mode == "Live Generation" and "live_hierarchy" in st.session_state and st.session_state["live_hierarchy"]:
+            hierarchy = st.session_state["live_hierarchy"]
 
-        for theme in hierarchy["themes"]:
-            # Calculate aggregate stats for the theme
-            theme_ideas = [get_idea_by_id(selected_scenario["ideas"], iid) for iid in theme["idea_ids"]]
-            theme_ideas = [i for i in theme_ideas if i is not None]
-            
-            if not theme_ideas:
-                continue
+        if hierarchy:
+            st.markdown("### Thematic Idea Hierarchy")
+            st.markdown(
+                '<div class="dvf-explanation">'
+                "Ideas are organized into strategic themes. Expand a theme to explore its sub-categories "
+                "and individual product ideas. This view helps you identify which strategic direction to pursue "
+                "before drilling into specific products. Inspired by hierarchical mechanism trees from AI-assisted ideation research."
+                "</div>",
+                unsafe_allow_html=True
+            )
+            st.markdown("")
 
-            avg_d = sum(i["dvf_scores"]["desirability"]["score"] for i in theme_ideas) / len(theme_ideas)
-            avg_v = sum(i["dvf_scores"]["viability"]["score"] for i in theme_ideas) / len(theme_ideas)
-            avg_f = sum(i["dvf_scores"]["feasibility"]["score"] for i in theme_ideas) / len(theme_ideas)
-            avg_composite = round(norm_d * avg_d + norm_v * avg_v + norm_f * avg_f, 1)
-            composite_color = get_score_color(avg_composite)
+            for theme in hierarchy["themes"]:
+                # Calculate aggregate stats for the theme
+                theme_ideas = [get_idea_by_id(active_ideas, iid) for iid in theme["idea_ids"]]
+                theme_ideas = [i for i in theme_ideas if i is not None]
+                
+                if not theme_ideas:
+                    continue
 
-            with st.expander(f"{theme['theme']} ({len(theme_ideas)} ideas, avg composite: {avg_composite})", expanded=False):
-                st.markdown(f'<div class="theme-desc">{theme["description"]}</div>', unsafe_allow_html=True)
-                st.markdown("")
+                avg_d = sum(i["dvf_scores"]["desirability"]["score"] for i in theme_ideas) / len(theme_ideas)
+                avg_v = sum(i["dvf_scores"]["viability"]["score"] for i in theme_ideas) / len(theme_ideas)
+                avg_f = sum(i["dvf_scores"]["feasibility"]["score"] for i in theme_ideas) / len(theme_ideas)
+                avg_composite = round(norm_d * avg_d + norm_v * avg_v + norm_f * avg_f, 1)
+                composite_color = get_score_color(avg_composite)
 
-                # Theme-level aggregate scores
-                tcol1, tcol2, tcol3, tcol4 = st.columns(4)
-                with tcol1:
-                    st.metric("Avg Desirability", f"{avg_d:.0f}")
-                with tcol2:
-                    st.metric("Avg Viability", f"{avg_v:.0f}")
-                with tcol3:
-                    st.metric("Avg Feasibility", f"{avg_f:.0f}")
-                with tcol4:
-                    st.metric("Avg Composite", avg_composite)
+                with st.expander(f"{theme['theme']} ({len(theme_ideas)} ideas, avg composite: {avg_composite})", expanded=False):
+                    st.markdown(f'<div class="theme-desc">{theme["description"]}</div>', unsafe_allow_html=True)
+                    st.markdown("")
 
-                st.markdown("")
+                    # Theme-level aggregate scores
+                    tcol1, tcol2, tcol3, tcol4 = st.columns(4)
+                    with tcol1:
+                        st.metric("Avg Desirability", f"{avg_d:.0f}")
+                    with tcol2:
+                        st.metric("Avg Viability", f"{avg_v:.0f}")
+                    with tcol3:
+                        st.metric("Avg Feasibility", f"{avg_f:.0f}")
+                    with tcol4:
+                        st.metric("Avg Composite", avg_composite)
 
-                # Sub-categories
-                for subcat in theme.get("sub_categories", []):
-                    st.markdown(f'<div class="subcat-label">{subcat["name"]}</div>', unsafe_allow_html=True)
-                    
-                    subcat_ideas = [get_idea_by_id(selected_scenario["ideas"], iid) for iid in subcat["idea_ids"]]
-                    subcat_ideas = [i for i in subcat_ideas if i is not None]
-                    
-                    # Sort by composite within sub-category
-                    for idea in subcat_ideas:
-                        dvf = idea["dvf_scores"]
-                        idea["_composite"] = round(
-                            norm_d * dvf["desirability"]["score"] +
-                            norm_v * dvf["viability"]["score"] +
-                            norm_f * dvf["feasibility"]["score"], 1
-                        )
-                    subcat_ideas.sort(key=lambda x: x["_composite"], reverse=True)
+                    st.markdown("")
 
-                    for rank_in_sub, idea in enumerate(subcat_ideas, 1):
-                        render_idea_card(idea, rank_in_sub, norm_d, norm_v, norm_f)
+                    # Sub-categories
+                    for subcat in theme.get("sub_categories", []):
+                        st.markdown(f'<div class="subcat-label">{subcat["name"]}</div>', unsafe_allow_html=True)
+                        
+                        subcat_ideas = [get_idea_by_id(active_ideas, iid) for iid in subcat["idea_ids"]]
+                        subcat_ideas = [i for i in subcat_ideas if i is not None]
+                        
+                        # Sort by composite within sub-category
+                        for idea in subcat_ideas:
+                            dvf = idea["dvf_scores"]
+                            idea["_composite"] = round(
+                                norm_d * dvf["desirability"]["score"] +
+                                norm_v * dvf["viability"]["score"] +
+                                norm_f * dvf["feasibility"]["score"], 1
+                            )
+                        subcat_ideas.sort(key=lambda x: x["_composite"], reverse=True)
 
-    else:
-        st.warning("No hierarchical organization available for this scenario. Showing ranked list instead.")
-        # Fallback to ranked list
-        ideas_sorted = sorted(
-            selected_scenario["ideas"],
-            key=lambda i: norm_d * i["dvf_scores"]["desirability"]["score"] + norm_v * i["dvf_scores"]["viability"]["score"] + norm_f * i["dvf_scores"]["feasibility"]["score"],
-            reverse=True
-        )
-        for rank, idea in enumerate(ideas_sorted, 1):
-            render_idea_card(idea, rank, norm_d, norm_v, norm_f)
+                        for rank_in_sub, idea in enumerate(subcat_ideas, 1):
+                            render_idea_card(idea, rank_in_sub, norm_d, norm_v, norm_f)
+
+        else:
+            # No hierarchy available - fall back to ranked list
+            st.markdown("### Ranked Ideas")
+            st.markdown(
+                '<div class="dvf-explanation">'
+                "Thematic hierarchy could not be generated for this set of ideas. Displaying as a ranked list."
+                "</div>",
+                unsafe_allow_html=True
+            )
+            st.markdown("")
+
+            ideas_sorted = sorted(
+                active_ideas,
+                key=lambda i: norm_d * i.get("dvf_scores", {}).get("desirability", {}).get("score", 0) +
+                              norm_v * i.get("dvf_scores", {}).get("viability", {}).get("score", 0) +
+                              norm_f * i.get("dvf_scores", {}).get("feasibility", {}).get("score", 0),
+                reverse=True
+            )
+            for rank, idea in enumerate(ideas_sorted, 1):
+                render_idea_card(idea, rank, norm_d, norm_v, norm_f)
 
 
 # ── Footer ──
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 st.markdown(
     '<div style="text-align:center; color:#9ca3af; font-size:0.82rem; padding:1rem 0;">'
-    "Wealth Management Idea Engine | Deloitte Capstone Project | Prototype v3.0<br>"
+    "Wealth Management Idea Engine | Deloitte Capstone Project | Prototype v4.0<br>"
     "DVF Framework: Desirability (market demand) · Viability (business economics) · Feasibility (implementation readiness)<br>"
     "Hierarchical organization inspired by AI-assisted creative ideation research (Yang et al., CMU 2025)"
     "</div>",
