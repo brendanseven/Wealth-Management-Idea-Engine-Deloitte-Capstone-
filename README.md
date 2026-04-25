@@ -1,7 +1,8 @@
 # Wealth Management Idea Engine
 
-**Deloitte Capstone Project | Carnegie Mellon University, Tepper School of Business**
-**MS in Business Analytics, Class of 2026**
+Deloitte Capstone Project
+Carnegie Mellon University, Tepper School of Business
+MS in Business Analytics, Class of 2026
 
 ## Project Purpose
 
